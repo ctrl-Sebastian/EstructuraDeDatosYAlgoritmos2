@@ -77,10 +77,16 @@ int main()
         userInput[t].icon = Icono(icono);
     }
 
-    int counter = 0;
+    int counter = 1;
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    while(chequearTresPrimeras(userInput)) {
-        shuffle(begin(baraja), end(baraja), default_random_engine(seed));
+    for (int i = 0; i < 1000000; i++){
+        cout << "Counter: " << counter << endl;
+        if(chequearTresPrimeras(userInput)){
+            break;
+        } else {
+            shuffle(begin(baraja), end(baraja), default_random_engine(seed));
+
+        }
         counter += 1;
     }
 
