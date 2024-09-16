@@ -2,6 +2,10 @@
 #include <algorithm>
 #include <random>       // std::default_random_engine
 #include <chrono>       // std::chrono::system_clock
+
+#include <set>          
+#include <vector> 
+
 using namespace std;
 
 enum Icono {
@@ -10,6 +14,8 @@ enum Icono {
     TREBOL = 2,
     PICA = 3
 };
+
+bool found = false;
 
 struct Carta {
     int numero;
@@ -39,13 +45,28 @@ bool esCartaUsuario(Carta carta, Carta userInput[3]) {
     return false;
 }
 
+bool esAs(Carta carta) {
+    return carta.numero == 0;
+}
 
 void imprimirBaraja(Carta userInput[3]) {
     for (int i = 0; i < 52; i++) {
         bool esUsuario = esCartaUsuario(baraja[i], userInput);
+        bool esCartaAs = esAs(baraja[i]);
 
-        if (esUsuario) {
+        bool usuarioGano = esUsuario && found == true;
+        bool casinoGano = esUsuario && found == false;
+
+
+        if (esCartaAs) {
             cout << "\033[31m";  // rojo
+        }
+        if (casinoGano) {
+            cout << "\033[33m"; // amarillo
+
+        }
+        if (usuarioGano) {
+            cout << "\033[32m";  // verde
         }
 
         cout << "Numero: " << baraja[i].numero + 1 << " Icono: ";
@@ -56,7 +77,7 @@ void imprimirBaraja(Carta userInput[3]) {
             case PICA: cout << "Picas"; break;
         }
 
-        if (esUsuario) {
+        if (usuarioGano || casinoGano || esCartaAs) {
             cout << "\033[0m";  // ddefault
         }
 
@@ -65,6 +86,24 @@ void imprimirBaraja(Carta userInput[3]) {
 }
 
 
+vector<int> convertirBarajaAEstado() {
+    vector<int> estado;
+    for (int i = 0; i < 52; i++) {
+        estado.push_back(baraja[i].numero * 10 + baraja[i].icon); 
+    }
+    return estado;
+}
+
+bool estadoPreviamenteBarajado(set<vector<int>>& estadosPrevios) {
+    vector<int> estadoActual = convertirBarajaAEstado();
+    return estadosPrevios.find(estadoActual) != estadosPrevios.end();
+}
+
+void almacenarEstadoBaraja(set<vector<int>>& estadosPrevios) {
+    vector<int> estadoActual = convertirBarajaAEstado();
+    estadosPrevios.insert(estadoActual);
+}
+
 bool chequearTresCartasDelUsuarioEnBaraja(Carta userInput[3]) { 
     for (int i = 0; i < 52; i++)
     {
@@ -72,10 +111,10 @@ bool chequearTresCartasDelUsuarioEnBaraja(Carta userInput[3]) {
         {
             if (baraja[i+1] == userInput[1]) 
             {
-                if (baraja[i+2] == userInput[2]) 
+                if (baraja[i+2] == userInput[2])
                 {
                     return true;
-                }   
+                }
             }
         }
     }
@@ -106,10 +145,9 @@ int main()
 {
     llenarBaraja();
 
-    Carta userInput[3] = {{0, CORAZON}, {0, DIAMANTE}, {0, TREBOL}};
+    Carta userInput[3] = {{1, CORAZON}, {2, DIAMANTE}, {3, TREBOL}};
 
-    bool found = false;
-/*
+    /*
     for (int t = 0; t < 3; t++) {
         cout << "Elige el numero de la carta: " << endl;
         cout << "A 2 3 4 5 6 7 8 9 10 J Q K" << endl;
@@ -132,35 +170,36 @@ int main()
     }
 
     */
+    
+
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(std::begin(baraja), std::end(baraja), std::default_random_engine(seed));
 
-    shuffle(begin(baraja), end(baraja), default_random_engine(seed));
-    while(!chequearTresCartasDelUsuarioEnBaraja(userInput)){
-        system("clear");
-        shuffle(begin(baraja), end(baraja), default_random_engine(seed));
+    set<vector<int>> estadosPrevios;
 
-        imprimirBaraja(userInput);
-    }
-/*
-    for (int i = 1; i < 10000000; i++){
-        if(chequearTresCartasDelUsuarioEnBaraja(userInput)){
-            found = true;
-            cout << "Se encontro la combinacion en el intento: " << i << endl;
-            imprimirBaraja(userInput);
-            break;
-        } else if (chequearCuatroAcesEnBaraja(userInput)) {
-            cout << "El casino gana" << endl;
-            cout << "Se encontraron 4 aces en el intento: " << i << endl;
-            imprimirBaraja(userInput);
-            break;
-        } else {
-            shuffle(begin(baraja), end(baraja), default_random_engine(seed));
+    for (int i = 0; i < 1000000; i++) {
+        cout << "Intento: " << i << endl;
+
+        if (!estadoPreviamenteBarajado(estadosPrevios)) {
+            if (chequearTresCartasDelUsuarioEnBaraja(userInput)) {
+                found = true;
+                cout << "¡Se encontró la combinación en el intento: " << i << "!" << endl;
+                imprimirBaraja(userInput);
+                break;
+            } else if (chequearCuatroAcesEnBaraja(userInput)) {
+                cout << "¡El casino gana! Se encontraron 4 Ases consecutivos en el intento: " << i << endl;
+                imprimirBaraja(userInput);
+                break;
+            }
+
+            almacenarEstadoBaraja(estadosPrevios);
         }
+
+        shuffle(begin(baraja), end(baraja), default_random_engine(seed));
+    }
+    if (found == false) {
+        cout << "No se encontro la combinacion en 1 millon de intentos" << endl;
     }
 
-    if (found == false) {
-        cout << "No se encontro la combinacion en 10 millones de intentos" << endl;
-    }
-*/
     return 0;
 }
