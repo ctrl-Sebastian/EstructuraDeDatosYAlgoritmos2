@@ -1,10 +1,7 @@
 #include <iostream>
 #include <algorithm>
-#include <random>       // std::default_random_engine
-#include <chrono>       // std::chrono::system_clock
-
-#include <set>          
-#include <vector> 
+#include <random>
+#include <chrono>
 
 using namespace std;
 
@@ -94,25 +91,6 @@ void imprimirBaraja() {
     }
 }
 
-
-vector<int> convertirBarajaAEstado() {
-    vector<int> estado;
-    for (int i = 0; i < 52; i++) {
-        estado.push_back(baraja[i].numero * 10 + baraja[i].icon); 
-    }
-    return estado;
-}
-
-bool estadoPreviamenteBarajado(set<vector<int>>& estadosPrevios) {
-    vector<int> estadoActual = convertirBarajaAEstado();
-    return estadosPrevios.find(estadoActual) != estadosPrevios.end();
-}
-
-void almacenarEstadoBaraja(set<vector<int>>& estadosPrevios) {
-    vector<int> estadoActual = convertirBarajaAEstado();
-    estadosPrevios.insert(estadoActual);
-}
-
 bool chequearTresCartasDelUsuarioEnBaraja() { 
     for (int i = 0; i < 52; i++)
     {
@@ -179,16 +157,12 @@ int main()
     */
     
 
-
-    set<vector<int>> estadosPrevios;
-
     for (int i = 0; i < 1000000; i++) {
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::shuffle(std::begin(baraja), std::end(baraja), std::default_random_engine(seed));
 
         cout << "Intento: " << i << endl;
 
-        if (!estadoPreviamenteBarajado(estadosPrevios)) {
             if (chequearTresCartasDelUsuarioEnBaraja()) {
                 found = true;
                 cout << "¡Se encontró la combinación en el intento: " << i << "!" << endl;
@@ -199,9 +173,6 @@ int main()
                 imprimirBaraja();
                 break;
             }
-
-            almacenarEstadoBaraja(estadosPrevios);
-        }
 
         cout << "Estado previamente barajado" << endl;
     }
