@@ -132,7 +132,6 @@ int main()
 {
     llenarBaraja();
 
-    /*
     for (int t = 0; t < 3; t++) {
         cout << "Elige el numero de la carta: " << endl;
         cout << "A 2 3 4 5 6 7 8 9 10 J Q K" << endl;
@@ -154,7 +153,7 @@ int main()
         userInput[t].icon = Icono(icono);
     }
 
-    */
+    
     
 
     for (int i = 0; i < 1000000; i++) {
