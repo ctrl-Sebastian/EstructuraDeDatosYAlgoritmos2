@@ -16,7 +16,7 @@ int dp(string cadena1, string cadena2, int size1, int size2) {
         if (size2 != 0) subsequencia = cadena2[size2] + subsequencia;
         return 0;
     }
-    if(cadena1[size1] == cadena2[size2]) {
+    if(cadena1[size1 - 1] == cadena2[size2 - 1]) {
         subsequencia = cadena1[size1] + subsequencia;
         return 1 + dp(cadena1, cadena2, size1 - 1, size2 - 1);
     } else {
